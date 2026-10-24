@@ -15,7 +15,7 @@ import net.yeehawitsjake.cursedcreepers.entity.EntityHallucinationCreeper;
 
 /**
  * /cursedcreeper spawn [distance] [player]: sends a Hallucination Creeper at a player from a distance (50 blocks by
- * default), already after them. Ops only; only the sender is told.
+ * default), already after them, from somewhere it can actually get to them. Ops only; only the sender is told.
  */
 public class CommandCursedCreeper extends CommandBase {
 
@@ -53,6 +53,9 @@ public class CommandCursedCreeper extends CommandBase {
             }
             EntityHallucinationCreeper creeper = new EntityHallucinationCreeper(world);
             creeper.setLocationAndAngles(x + 0.5, y, z + 0.5, world.rand.nextFloat() * 360f, 0f);
+            if (creeper.pathTo(target) == null) {
+                continue; // somewhere it couldn't get to them from: try another direction
+            }
             creeper.setAttackTarget(target);
             world.spawnEntityInWorld(creeper);
             sender.addChatMessage(
@@ -62,7 +65,10 @@ public class CommandCursedCreeper extends CommandBase {
             return;
         }
         throw new CommandException(
-            "Couldn't find ground " + distance + " blocks from " + target.getCommandSenderName());
+            "Couldn't find ground " + distance
+                + " blocks from "
+                + target.getCommandSenderName()
+                + " that it could reach them from");
     }
 
     /** the standable y closest to the player's height in this column (within 24 blocks), or -1; never loads chunks */

@@ -41,7 +41,7 @@ public class CursedCreepers {
 
         // mod entity ids are per mod, so these never clash with the pack's other mobs
         EntityRegistry
-            .registerModEntity(EntityHallucinationCreeper.class, "HallucinationCreeper", 0, this, 160, 2, true);
+            .registerModEntity(EntityHallucinationCreeper.class, "HallucinationCreeper", 0, this, 160, 1, true);
         GameRegistry.registerItem(
             new ItemCursedSpawnEgg(EntityHallucinationCreeper.class, 0x0DA70B, 0x101010)
                 .setUnlocalizedName(MODID + ".spawnEggHallucinationCreeper"),

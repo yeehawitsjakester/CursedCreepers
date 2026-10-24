@@ -1,11 +1,12 @@
 package net.yeehawitsjake.cursedcreepers.entity;
 
+import java.util.HashMap;
+
 import net.minecraft.block.Block;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
 import net.minecraft.entity.ai.EntityAILookIdle;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.ai.EntityAISwimming;
@@ -15,6 +16,8 @@ import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.pathfinding.PathEntity;
+import net.minecraft.pathfinding.PathPoint;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.ReportedException;
@@ -32,12 +35,22 @@ public class EntityHallucinationCreeper extends EntityCreeper {
 
     /** data watcher slot with the entity id of the player it's after (-1: nobody), so their client can show it */
     private static final int DW_TARGET = 20;
+    /** how far it still has to run to reach them, in blocks (-1: not chasing), for timing the sound */
+    private static final int DW_REMAINING = 21;
+    /** its chase speed in blocks per second, so clients time the sound with the server's setting */
+    private static final int DW_SPEED = 22;
+    /** after giving up on a player it can't reach, leaves them alone this long */
+    private static final int GIVE_UP_COOLDOWN = 20 * 10;
     /** gives up and fades away after this long without anyone to chase */
     private static final int MAX_IDLE_TICKS = 20 * 120;
 
     private int idleTicks;
     /** goes off when it reaches its target (decided when it spawns, saved with it) */
     private boolean explodes;
+    private int gaveUpOn = -1;
+    private int gaveUpUntil;
+    /** player entity id -> {tick checked, 1 if reachable}: working out a path is too slow to redo every tick */
+    private final HashMap<Integer, int[]> reachable = new HashMap<Integer, int[]>();
     /** client: the target last seen in the data watcher, to notice when it locks on to us */
     private int seenTarget = -1;
 
@@ -47,11 +60,20 @@ public class EntityHallucinationCreeper extends EntityCreeper {
         tasks.taskEntries.clear();
         targetTasks.taskEntries.clear();
         tasks.addTask(1, new EntityAISwimming(this));
-        tasks.addTask(2, new EntityAIAttackOnCollide(this, EntityPlayer.class, 1.0D, true));
+        tasks.addTask(2, new EntityAIHallucinationChase(this));
         tasks.addTask(3, new EntityAIWatchClosest(this, EntityPlayer.class, (float) Config.hallucinationSightRange));
-        tasks.addTask(4, new EntityAIWander(this, 0.3D));
+        tasks.addTask(4, new EntityAIWander(this, 0.8D));
         tasks.addTask(5, new EntityAILookIdle(this));
-        targetTasks.addTask(1, new EntityAINearestAttackableTarget(this, EntityPlayer.class, 0, true));
+        // only locks on to players it can see and actually get to
+        targetTasks.addTask(1, new EntityAINearestAttackableTarget(this, EntityPlayer.class, 5, true) {
+
+            @Override
+            protected boolean isSuitableTarget(EntityLivingBase target, boolean ignoreTeams) {
+                return super.isSuitableTarget(target, ignoreTeams) && canReach(target);
+            }
+        });
+        getNavigator().setAvoidsWater(false);
+        getNavigator().setCanSwim(true);
         isImmuneToFire = true;
         experienceValue = 0;
         if (world != null && !world.isRemote) {
@@ -74,7 +96,8 @@ public class EntityHallucinationCreeper extends EntityCreeper {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(Config.hallucinationSpeed);
+        // its chase doesn't use this (see EntityAIHallucinationChase); it's only how fast it wanders, like a creeper
+        getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.25);
         getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(Config.hallucinationSightRange);
     }
 
@@ -82,6 +105,58 @@ public class EntityHallucinationCreeper extends EntityCreeper {
     protected void entityInit() {
         super.entityInit();
         dataWatcher.addObject(DW_TARGET, Integer.valueOf(-1));
+        dataWatcher.addObject(DW_REMAINING, Float.valueOf(-1));
+        dataWatcher.addObject(DW_SPEED, Float.valueOf((float) Config.hallucinationChaseSpeed));
+    }
+
+    /**
+     * a path all the way to them, or null. Vanilla's own reachability check only compares x and z, so a player on a
+     * roof counted as reachable from the foot of the wall; this wants the path to end within reach in all three.
+     */
+    public PathEntity pathTo(EntityLivingBase target) {
+        PathEntity path = getNavigator().getPathToEntityLiving(target);
+        if (path == null) {
+            return null;
+        }
+        PathPoint end = path.getFinalPathPoint();
+        double dx = end.xCoord + 0.5 - target.posX, dy = end.yCoord - target.posY, dz = end.zCoord + 0.5 - target.posZ;
+        double reach = Config.hallucinationVanishDistance + 1.5;
+        return dx * dx + dy * dy + dz * dz <= reach * reach ? path : null;
+    }
+
+    public boolean canReach(EntityLivingBase target) {
+        if (target.getEntityId() == gaveUpOn && ticksExisted < gaveUpUntil) {
+            return false;
+        }
+        int[] known = reachable.get(target.getEntityId());
+        if (known == null || ticksExisted - known[0] >= 20) {
+            known = new int[] { ticksExisted, pathTo(target) != null ? 1 : 0 };
+            reachable.put(target.getEntityId(), known);
+        }
+        return known[1] == 1;
+    }
+
+    /** stop chasing someone it can't get to, and leave them be for a while */
+    public void giveUpOn(EntityLivingBase target) {
+        gaveUpOn = target.getEntityId();
+        gaveUpUntil = ticksExisted + GIVE_UP_COOLDOWN;
+        setAttackTarget(null);
+    }
+
+    public void setRemainingDistance(float blocks) {
+        if (Math.abs(dataWatcher.getWatchableObjectFloat(DW_REMAINING) - blocks) > 0.01f) {
+            dataWatcher.updateObject(DW_REMAINING, Float.valueOf(blocks));
+        }
+    }
+
+    /** blocks left to run (-1 if unknown) */
+    public float getRemainingDistance() {
+        return dataWatcher.getWatchableObjectFloat(DW_REMAINING);
+    }
+
+    /** chase speed, blocks per second */
+    public float getChaseSpeed() {
+        return dataWatcher.getWatchableObjectFloat(DW_SPEED);
     }
 
     /** whether it's after this player (works on clients too) */

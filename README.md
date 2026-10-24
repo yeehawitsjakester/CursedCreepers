@@ -5,8 +5,9 @@ Shitpost creepers for Minecraft **1.7.10** (Forge 10.13.4.1614). Install on the 
 ## Creepers
 
 - **Hallucination Creeper**: looks exactly like a creeper. 1% of naturally spawned creepers are secretly one. It
-  notices you from 64 blocks away (if it can see you) and runs at you at about 16 blocks a second, roughly 6x a normal
-  creeper and 3x a sprinting player.
+  notices you from 64 blocks away, but only if it can see you and has a way to actually get to you, and runs at you at
+  24 blocks a second (about 4x a sprinting player). If you get somewhere it can't follow, it gives up after 3 seconds
+  and leaves you alone for 10.
   - As it comes, a sound plays from where it is, stretched to end the instant it reaches you: slowed down and deeper for
     a long chase, sped up and higher for a short one. You hear it across its whole sight range; anyone else within 60
     blocks hears it too, fading with their distance from it, like proximity chat.
@@ -25,7 +26,7 @@ Ops can send one at a player from a distance, already after them:
 The distance defaults to 50 blocks and the player to yourself. It lands on ground in a random direction, as close to
 the player's height as it can find. Only you get told.
 
-Tune it in `config/cursedcreepers.cfg` (speed, sight range, vanish distance, replace chance, sound range, explode
+Tune it in `config/cursedcreepers.cfg` (chase speed, sight range, vanish distance, replace chance, sound range, explode
 chance and damage, crash chance, and an optional extra spawn weight). Keep the server's and
 clients' configs the same.
 

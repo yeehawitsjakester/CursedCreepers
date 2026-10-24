@@ -9,7 +9,7 @@ public final class Config {
 
     private Config() {}
 
-    public static double hallucinationSpeed = 0.6;
+    public static double hallucinationChaseSpeed = 24;
     public static double hallucinationSightRange = 64;
     public static double hallucinationVanishDistance = 1.5;
     public static int hallucinationSpawnWeight = 0;
@@ -22,13 +22,14 @@ public final class Config {
     public static void load(File file) {
         Configuration c = new Configuration(file);
         String cat = "hallucination_creeper";
-        hallucinationSpeed = c.get(
-            cat,
-            "speed",
-            hallucinationSpeed,
-            "Movement speed attribute. Actual speed grows with its square: 0.25 (a creeper) runs about 2.8 blocks/s, 0.6 about 16.",
-            0.05,
-            2.0)
+        hallucinationChaseSpeed = c
+            .get(
+                cat,
+                "chaseSpeed",
+                hallucinationChaseSpeed,
+                "Blocks per second it runs at you, exactly (a sprinting player does about 5.6, a creeper 2.8).",
+                1,
+                100)
             .getDouble();
         hallucinationSightRange = c
             .get(
