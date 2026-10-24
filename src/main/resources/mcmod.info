@@ -1,0 +1,15 @@
+[
+{
+  "modid" : "${modId}",
+  "name" : "${modName}",
+  "version" : "${modVersion}",
+  "mcversion" : "1.7.10",
+  "description" : "Creepers, but wrong. The Hallucination Creeper spots you from far away, runs at you far too fast, and is gone the moment it reaches you. Nobody else saw it.",
+  "authors" : ["yeehawitsjake"],
+  "credits" : "",
+  "url" : "",
+  "logoFile" : "",
+  "screenshots" : [],
+  "dependencies" : []
+}
+]
