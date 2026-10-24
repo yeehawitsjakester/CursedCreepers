@@ -17,14 +17,13 @@ public final class Config {
     public static void load(File file) {
         Configuration c = new Configuration(file);
         String cat = "hallucination_creeper";
-        hallucinationSpeed = c
-            .get(
-                cat,
-                "speed",
-                hallucinationSpeed,
-                "Movement speed. A normal creeper is 0.25, a player walking about 0.1 (sprinting 0.13).",
-                0.05,
-                2.0)
+        hallucinationSpeed = c.get(
+            cat,
+            "speed",
+            hallucinationSpeed,
+            "Movement speed attribute. Actual speed grows with its square: 0.25 (a creeper) runs about 2.8 blocks/s, 0.6 about 16.",
+            0.05,
+            2.0)
             .getDouble();
         hallucinationSightRange = c
             .get(

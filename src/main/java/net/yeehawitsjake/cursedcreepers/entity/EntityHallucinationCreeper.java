@@ -31,6 +31,8 @@ public class EntityHallucinationCreeper extends EntityCreeper {
     private static final int MAX_IDLE_TICKS = 20 * 120;
 
     private int idleTicks;
+    /** client: the target last seen in the data watcher, to notice when it locks on to us */
+    private int seenTarget = -1;
 
     public EntityHallucinationCreeper(World world) {
         super(world);
@@ -60,10 +62,25 @@ public class EntityHallucinationCreeper extends EntityCreeper {
         dataWatcher.addObject(DW_TARGET, Integer.valueOf(-1));
     }
 
+    /** whether it's after this player (works on clients too) */
+    public boolean isChasing(EntityPlayer player) {
+        return player != null && dataWatcher.getWatchableObjectInt(DW_TARGET) == player.getEntityId();
+    }
+
     @Override
     public void onLivingUpdate() {
         super.onLivingUpdate();
-        if (worldObj.isRemote || isDead) {
+        if (worldObj.isRemote) {
+            int target = dataWatcher.getWatchableObjectInt(DW_TARGET);
+            if (target != seenTarget) {
+                seenTarget = target;
+                if (CursedCreepers.proxy.isLocalPlayer(target)) {
+                    CursedCreepers.proxy.playLockOn(this); // it's seen us
+                }
+            }
+            return;
+        }
+        if (isDead) {
             return;
         }
         EntityLivingBase target = getAttackTarget();
