@@ -2,6 +2,7 @@ package net.yeehawitsjake.cursedcreepers.proxy;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderCreeper;
+import net.minecraft.entity.player.EntityPlayer;
 import net.yeehawitsjake.cursedcreepers.client.LockOnSound;
 import net.yeehawitsjake.cursedcreepers.entity.EntityHallucinationCreeper;
 
@@ -16,10 +17,10 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Override
-    public void playLockOn(EntityHallucinationCreeper creeper) {
+    public void playLockOn(EntityHallucinationCreeper creeper, EntityPlayer victim) {
         Minecraft mc = Minecraft.getMinecraft();
         mc.getSoundHandler()
-            .playSound(LockOnSound.create(creeper, mc.thePlayer));
+            .playSound(LockOnSound.create(creeper, victim, victim == mc.thePlayer));
     }
 
     @Override

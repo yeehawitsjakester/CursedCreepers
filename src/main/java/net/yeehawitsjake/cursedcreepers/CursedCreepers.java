@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.MinecraftForge;
 import net.yeehawitsjake.cursedcreepers.entity.EntityHallucinationCreeper;
 import net.yeehawitsjake.cursedcreepers.item.ItemCursedSpawnEgg;
 import net.yeehawitsjake.cursedcreepers.proxy.CommonProxy;
@@ -50,6 +51,7 @@ public class CursedCreepers {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         proxy.registerRenderers();
+        MinecraftForge.EVENT_BUS.register(new SpawnHandler());
     }
 
     @Mod.EventHandler

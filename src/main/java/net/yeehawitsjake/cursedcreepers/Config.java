@@ -12,7 +12,12 @@ public final class Config {
     public static double hallucinationSpeed = 0.6;
     public static double hallucinationSightRange = 64;
     public static double hallucinationVanishDistance = 1.5;
-    public static int hallucinationSpawnWeight = 5;
+    public static int hallucinationSpawnWeight = 0;
+    public static double hallucinationReplaceChance = 1;
+    public static double hallucinationSoundRange = 60;
+    public static double hallucinationExplodeChance = 20;
+    public static double hallucinationExplodeDamage = 3;
+    public static double crashChance = 0.000001;
 
     public static void load(File file) {
         Configuration c = new Configuration(file);
@@ -43,15 +48,57 @@ public final class Config {
                 0.5,
                 8.0)
             .getDouble();
-        hallucinationSpawnWeight = c
+        hallucinationSpawnWeight = c.get(
+            cat,
+            "spawnWeight",
+            hallucinationSpawnWeight,
+            "Extra natural spawn weight among monsters (creepers and zombies are 100), on top of replaceChance. 0 = off.",
+            0,
+            100)
+            .getInt();
+        hallucinationReplaceChance = c
             .get(
                 cat,
-                "spawnWeight",
-                hallucinationSpawnWeight,
-                "Natural spawn weight among monsters (creepers and zombies are 100). 0 = only spawn eggs.",
+                "replaceChance",
+                hallucinationReplaceChance,
+                "Percent of naturally spawned creepers that are Hallucination Creepers instead.",
                 0,
                 100)
-            .getInt();
+            .getDouble();
+        hallucinationSoundRange = c.get(
+            cat,
+            "soundRange",
+            hallucinationSoundRange,
+            "Blocks from the creeper that other players hear it coming, fading with distance. Its target always hears it.",
+            0,
+            256)
+            .getDouble();
+        hallucinationExplodeChance = c
+            .get(
+                cat,
+                "explodeChance",
+                hallucinationExplodeChance,
+                "Percent that go off when they reach their target: a bang and a little damage, never blocks.",
+                0,
+                100)
+            .getDouble();
+        hallucinationExplodeDamage = c
+            .get(
+                cat,
+                "explodeDamage",
+                hallucinationExplodeDamage,
+                "Damage those do, in half-hearts (before difficulty scaling).",
+                0,
+                40)
+            .getDouble();
+        crashChance = c.get(
+            "general",
+            "crashChance",
+            crashChance,
+            "Percent chance, each time a Hallucination Creeper reaches someone, that it crashes the server. 0 = never.",
+            0,
+            100)
+            .getDouble();
         if (c.hasChanged()) {
             c.save();
         }

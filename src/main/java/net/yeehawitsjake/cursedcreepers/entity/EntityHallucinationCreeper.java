@@ -1,6 +1,7 @@
 package net.yeehawitsjake.cursedcreepers.entity;
 
 import net.minecraft.block.Block;
+import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -13,15 +14,19 @@ import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EntityDamageSource;
+import net.minecraft.util.ReportedException;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.yeehawitsjake.cursedcreepers.Config;
 import net.yeehawitsjake.cursedcreepers.CursedCreepers;
 
 /**
  * A creeper that isn't there. It spots a player from far away, runs at them absurdly fast, and the moment it reaches
- * them it's simply gone: no explosion, no particles, no drops. Only the player it's after can see it, nothing can
- * hurt or touch it, and it makes no footsteps.
+ * them it's simply gone: no drops, and usually no explosion (some go off, harmlessly to blocks). Only the player it's
+ * after can see it, everyone near can hear it coming, nothing can hurt or touch it, and it makes no footsteps.
  */
 public class EntityHallucinationCreeper extends EntityCreeper {
 
@@ -31,6 +36,8 @@ public class EntityHallucinationCreeper extends EntityCreeper {
     private static final int MAX_IDLE_TICKS = 20 * 120;
 
     private int idleTicks;
+    /** goes off when it reaches its target (decided when it spawns, saved with it) */
+    private boolean explodes;
     /** client: the target last seen in the data watcher, to notice when it locks on to us */
     private int seenTarget = -1;
 
@@ -47,6 +54,21 @@ public class EntityHallucinationCreeper extends EntityCreeper {
         targetTasks.addTask(1, new EntityAINearestAttackableTarget(this, EntityPlayer.class, 0, true));
         isImmuneToFire = true;
         experienceValue = 0;
+        if (world != null && !world.isRemote) {
+            explodes = world.rand.nextDouble() * 100 < Config.hallucinationExplodeChance;
+        }
+    }
+
+    @Override
+    public void writeEntityToNBT(NBTTagCompound tag) {
+        super.writeEntityToNBT(tag);
+        tag.setBoolean("Explodes", explodes);
+    }
+
+    @Override
+    public void readEntityFromNBT(NBTTagCompound tag) {
+        super.readEntityFromNBT(tag);
+        explodes = tag.getBoolean("Explodes");
     }
 
     @Override
@@ -74,8 +96,9 @@ public class EntityHallucinationCreeper extends EntityCreeper {
             int target = dataWatcher.getWatchableObjectInt(DW_TARGET);
             if (target != seenTarget) {
                 seenTarget = target;
-                if (CursedCreepers.proxy.isLocalPlayer(target)) {
-                    CursedCreepers.proxy.playLockOn(this); // it's seen us
+                Entity victim = target < 0 ? null : worldObj.getEntityByID(target);
+                if (victim instanceof EntityPlayer) {
+                    CursedCreepers.proxy.playLockOn(this, (EntityPlayer) victim); // it's seen someone
                 }
             }
             return;
@@ -93,7 +116,7 @@ public class EntityHallucinationCreeper extends EntityCreeper {
             idleTicks = 0;
             double reach = Config.hallucinationVanishDistance;
             if (getDistanceSqToEntity(target) <= reach * reach) {
-                setDead(); // ...it was never there
+                arrive(target);
             }
         } else if (++idleTicks > MAX_IDLE_TICKS) {
             setDead();
@@ -128,8 +151,36 @@ public class EntityHallucinationCreeper extends EntityCreeper {
 
     @Override
     public boolean attackEntityAsMob(Entity target) {
-        setDead(); // close enough to swing at them: it vanishes instead
+        if (!isDead) {
+            arrive(target); // close enough to swing at them: it reaches them instead
+        }
         return false;
+    }
+
+    /** it got to them: gone, maybe with a bang, and once in a hundred million times it takes the server with it */
+    private void arrive(Entity target) {
+        setDead();
+        if (explodes) {
+            // a real explosion would knock out paintings and item frames even without breaking blocks: fake one
+            worldObj.playSoundEffect(
+                posX,
+                posY,
+                posZ,
+                "random.explode",
+                4.0F,
+                (1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.2F) * 0.7F);
+            ((WorldServer) worldObj).func_147487_a("hugeexplosion", posX, posY + 1, posZ, 1, 0, 0, 0, 0);
+            target.attackEntityFrom(
+                new EntityDamageSource("explosion.player", this).setDifficultyScaled()
+                    .setExplosion(),
+                (float) Config.hallucinationExplodeDamage);
+        }
+        if (rand.nextDouble() * 100 < Config.crashChance) {
+            throw new ReportedException(
+                CrashReport.makeCrashReport(
+                    new IllegalStateException("It was never there."),
+                    "Being reached by a Hallucination Creeper"));
+        }
     }
 
     @Override

@@ -4,12 +4,17 @@ Shitpost creepers for Minecraft **1.7.10** (Forge 10.13.4.1614). Install on the 
 
 ## Creepers
 
-- **Hallucination Creeper**: looks exactly like a creeper. It notices you from 64 blocks away (if it can see you) and
-  runs at you at about 16 blocks a second, roughly 6x a normal creeper and 3x a sprinting player. As it comes, the
-  player it's after hears a sound stretched to end the instant it reaches them, slowed down and deeper for a long
-  chase, sped up and higher for a short one. Then it's gone: no explosion, no hit, no drops. Only the player it's
-  chasing can see or hear it; it can't be hit, shot or pushed, makes no footsteps, and fades away after two minutes
-  with nobody to chase. Spawns rarely in the dark like other monsters, or from its spawn egg (Miscellaneous tab).
+- **Hallucination Creeper**: looks exactly like a creeper. 1% of naturally spawned creepers are secretly one. It
+  notices you from 64 blocks away (if it can see you) and runs at you at about 16 blocks a second, roughly 6x a normal
+  creeper and 3x a sprinting player.
+  - As it comes, a sound plays from where it is, stretched to end the instant it reaches you: slowed down and deeper for
+    a long chase, sped up and higher for a short one. You hear it across its whole sight range; anyone else within 60
+    blocks hears it too, fading with their distance from it, like proximity chat.
+  - Only you can see it. It can't be hit, shot or pushed, makes no footsteps, and fades away after two minutes with
+    nobody to chase.
+  - When it reaches you it's gone. Usually that's all; one in five goes off instead: a bang and 1.5 hearts of damage,
+    but no blocks broken.
+  - Each time one reaches someone there's a 0.000001% (one in a hundred million) chance it crashes the server.
 
 Ops can send one at a player from a distance, already after them:
 
@@ -20,7 +25,8 @@ Ops can send one at a player from a distance, already after them:
 The distance defaults to 50 blocks and the player to yourself. It lands on ground in a random direction, as close to
 the player's height as it can find. Only you get told.
 
-Tune it in `config/cursedcreepers.cfg` (speed, sight range, vanish distance, spawn weight). Keep the server's and
+Tune it in `config/cursedcreepers.cfg` (speed, sight range, vanish distance, replace chance, sound range, explode
+chance and damage, crash chance, and an optional extra spawn weight). Keep the server's and
 clients' configs the same.
 
 ## Sounds

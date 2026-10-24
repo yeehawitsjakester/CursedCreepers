@@ -1,6 +1,5 @@
 package net.yeehawitsjake.cursedcreepers.client;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MovingSound;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
@@ -9,8 +8,9 @@ import net.yeehawitsjake.cursedcreepers.Config;
 import net.yeehawitsjake.cursedcreepers.entity.EntityHallucinationCreeper;
 
 /**
- * The sound a Hallucination Creeper makes while it runs at you, stretched to end the moment it reaches you. Only the
- * player it's after hears it, from where the creeper is.
+ * The sound a Hallucination Creeper makes while it runs at someone, stretched to end the moment it reaches them. It
+ * comes from where the creeper is: the player it's after hears it across its whole sight range, and anyone else within
+ * the sound range hears it fade with their distance, like proximity chat. The timing always follows the victim's chase.
  *
  * The clip is resampled, so stretching it changes its pitch too, on purpose. Minecraft only plays sounds between half
  * and double speed, so three copies ship at 0.25x, 1x and 4x (tools/make-sounds.sh). The copy closest to the predicted
@@ -36,7 +36,7 @@ public class LockOnSound extends MovingSound {
     private double closing;
     private double lastGap;
 
-    public static LockOnSound create(EntityHallucinationCreeper creeper, EntityPlayer player) {
+    public static LockOnSound create(EntityHallucinationCreeper creeper, EntityPlayer player, boolean forMe) {
         double perTick = groundSpeed(creeper);
         double seconds = Math.max(0.05, gap(creeper, player) / perTick / 20);
         double rate = BASE_SECONDS / seconds; // the speed the clip would need to fit
@@ -46,11 +46,11 @@ public class LockOnSound extends MovingSound {
                 pick = i;
             }
         }
-        return new LockOnSound(creeper, player, pick, rate / SPEEDS[pick], perTick);
+        return new LockOnSound(creeper, player, pick, rate / SPEEDS[pick], perTick, forMe);
     }
 
-    private LockOnSound(EntityHallucinationCreeper creeper, EntityPlayer player, int pick, double pitch,
-        double perTick) {
+    private LockOnSound(EntityHallucinationCreeper creeper, EntityPlayer player, int pick, double pitch, double perTick,
+        boolean forMe) {
         super(new ResourceLocation("cursedcreepers", NAMES[pick]));
         this.creeper = creeper;
         this.player = player;
@@ -58,14 +58,17 @@ public class LockOnSound extends MovingSound {
         field_147663_c = clampPitch(pitch); // the sound's pitch (playback speed)
         this.closing = perTick;
         this.lastGap = gap(creeper, player);
-        // heard across its whole sight range, getting louder as it comes
-        this.volume = (float) Math.max(1, Config.hallucinationSightRange / 16);
+        // Minecraft fades a sound out linearly over 16 blocks per unit of volume: the victim hears it across its whole
+        // sight range, getting louder as it comes; bystanders within the sound range, quieter the further they are
+        double range = forMe ? Math.max(Config.hallucinationSoundRange, Config.hallucinationSightRange)
+            : Config.hallucinationSoundRange;
+        this.volume = (float) Math.max(1, range / 16);
         moveTo();
     }
 
     @Override
     public void update() {
-        if (creeper.isDead || !creeper.isChasing(Minecraft.getMinecraft().thePlayer)) {
+        if (creeper.isDead || player.isDead || !creeper.isChasing(player)) {
             donePlaying = true; // it's gone: so is the sound
             return;
         }
