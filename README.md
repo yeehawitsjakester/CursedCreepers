@@ -17,23 +17,49 @@ Shitpost creepers for Minecraft **1.7.10** (Forge 10.13.4.1614). Install on the 
     but no blocks broken.
   - Each time one reaches someone there's a 0.000001% (one in a hundred million) chance it crashes the server.
 
-Ops can send one at a player from a distance, already after them:
+## Hauntings
+
+Every 10 minutes or so (on average, per player), one player gets something nobody else notices:
+
+- **A whisper**: a sound from somewhere behind them, played to them alone, quiet enough to always sound far off. A
+  backwards, echoing version of the lock-on sound, "Bold... and stupid", a creeper hissing right behind them, a zombie
+  banging on a door, a door opening, a bow firing, an enderman's stare. Underground (no daylight reaching them at all)
+  there's also a quiet, echoing fart.
+- **Herobrine** (2 in 5, when there are trees around): standing beside a trunk or under the leaves 20-40 blocks off, off
+  to one side where they'd only catch him out of the corner of their eye, staring at them with glowing white eyes. Only
+  they can see him. The moment their crosshair comes near him, or they come within 12 blocks, he's gone: sometimes
+  silently, sometimes with a rustle in the leaves, sometimes with "Bold... and stupid" from where he stood. He leaves
+  on his own after 90 seconds and is never saved with the world.
+
+## Commands
+
+Ops only; only you get told.
 
 ```
-/cursedcreeper spawn [distance] [player]
+/cursedcreeper spawn [distance] [player]     a Hallucination Creeper, already after them
+/cursedcreeper watcher [player]              Herobrine in the trees at the edge of their sight
+/cursedcreeper whisper [player] [sound]      a whisper (a random one, or any sound name)
 ```
 
-The distance defaults to 50 blocks and the player to yourself. It lands on ground in a random direction, as close to
-the player's height as it can find. Only you get told.
+`spawn` defaults to 50 blocks and the player to yourself. It lands on ground in a random direction, as close to the
+player's height as it can find, somewhere it can actually reach them from.
 
-Tune it in `config/cursedcreepers.cfg` (chase speed, sight range, vanish distance, replace chance, sound range, explode
-chance and damage, crash chance, and an optional extra spawn weight). Keep the server's and
-clients' configs the same.
+## Config
 
-## Sounds
+`config/cursedcreepers.cfg`:
 
-`sound-src/` holds the original clip; `tools/make-sounds.sh` (needs ffmpeg) turns it into the three OGG copies the mod
-plays (1x, 0.25x and 4x speed).
+- `hallucination_creeper`: chase speed, sight range, vanish distance, replace chance, sound range, explode chance and
+  damage, and an optional extra spawn weight. Keep the server's and clients' the same.
+- `haunting` (server only): how often, how many are Herobrine, his distances, vanish angle and distance, how long he
+  stays, whether he needs trees, and the whisper sounds as `name,minDistance,maxDistance[,volume][,cave]`. Any sound
+  name works, including ones a resource pack adds.
+- `general`: the crash chance.
+
+## Sounds and skin
+
+`sound-src/` holds the original clips; `tools/make-sounds.sh` (needs ffmpeg) turns them into the OGGs the mod plays: the
+lock-on sound at 1x, 0.25x and 4x speed and the backwards whisper, all from the meme clip, plus `bold` and `cave_fart`
+as they are. `tools/make-skin.py` draws Herobrine's skin and his eyes layer.
 
 ## Building
 

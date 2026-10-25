@@ -6,9 +6,11 @@ import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.MinecraftForge;
 import net.yeehawitsjake.cursedcreepers.entity.EntityHallucinationCreeper;
+import net.yeehawitsjake.cursedcreepers.entity.EntityWatcher;
 import net.yeehawitsjake.cursedcreepers.item.ItemCursedSpawnEgg;
 import net.yeehawitsjake.cursedcreepers.proxy.CommonProxy;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -42,6 +44,7 @@ public class CursedCreepers {
         // mod entity ids are per mod, so these never clash with the pack's other mobs
         EntityRegistry
             .registerModEntity(EntityHallucinationCreeper.class, "HallucinationCreeper", 0, this, 160, 1, true);
+        EntityRegistry.registerModEntity(EntityWatcher.class, "Watcher", 1, this, 128, 2, false);
         GameRegistry.registerItem(
             new ItemCursedSpawnEgg(EntityHallucinationCreeper.class, 0x0DA70B, 0x101010)
                 .setUnlocalizedName(MODID + ".spawnEggHallucinationCreeper"),
@@ -52,6 +55,9 @@ public class CursedCreepers {
     public void init(FMLInitializationEvent event) {
         proxy.registerRenderers();
         MinecraftForge.EVENT_BUS.register(new SpawnHandler());
+        FMLCommonHandler.instance()
+            .bus()
+            .register(new Haunting());
     }
 
     @Mod.EventHandler

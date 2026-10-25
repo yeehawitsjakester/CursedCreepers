@@ -18,6 +18,17 @@ public final class Config {
     public static double hallucinationExplodeChance = 20;
     public static double hallucinationExplodeDamage = 3;
     public static double crashChance = 0.000001;
+    public static double hauntMinutes = 10;
+    public static double watcherShare = 40;
+    public static String[] whisperSounds = { "cursedcreepers:whisper,20,32", "cursedcreepers:bold,24,40",
+        "creeper.primed,2,4", "mob.zombie.wood,10,20", "random.door_open,8,16", "random.bow,12,24",
+        "mob.endermen.stare,16,24", "cursedcreepers:cave_fart,6,14,0.4,cave" };
+    public static int watcherMinDistance = 20;
+    public static int watcherMaxDistance = 40;
+    public static double watcherVanishAngle = 12;
+    public static double watcherVanishDistance = 12;
+    public static int watcherSeconds = 90;
+    public static boolean watcherNeedsTrees = true;
 
     public static void load(File file) {
         Configuration c = new Configuration(file);
@@ -100,6 +111,66 @@ public final class Config {
             0,
             100)
             .getDouble();
+        cat = "haunting";
+        c.setCategoryComment(cat, "Things only one player notices. Server side only.");
+        hauntMinutes = c.get(
+            cat,
+            "minutesBetween",
+            hauntMinutes,
+            "On average, minutes between hauntings for each player (a whisper or Herobrine). 0 = never on their own.",
+            0,
+            1440)
+            .getDouble();
+        watcherShare = c.get(
+            cat,
+            "watcherChance",
+            watcherShare,
+            "Percent of hauntings that are Herobrine watching (when there are trees to put him in); the rest are whispers.",
+            0,
+            100)
+            .getDouble();
+        whisperSounds = c.get(
+            cat,
+            "whisperSounds",
+            whisperSounds,
+            "Sounds a whisper picks from, as name,minDistance,maxDistance[,volume][,cave]: played from that far behind "
+                + "the player, to them alone. volume scales it (1 = just carries that far); cave = only when no daylight "
+                + "reaches them. Any sound name works, including ones a resource pack adds.")
+            .getStringList();
+        watcherMinDistance = c
+            .get(cat, "watcherMinDistance", watcherMinDistance, "Closest Herobrine appears, in blocks.", 4, 96)
+            .getInt();
+        watcherMaxDistance = c
+            .get(cat, "watcherMaxDistance", watcherMaxDistance, "Furthest Herobrine appears, in blocks.", 4, 96)
+            .getInt();
+        watcherVanishAngle = c
+            .get(
+                cat,
+                "watcherVanishAngle",
+                watcherVanishAngle,
+                "Herobrine vanishes when the player's crosshair comes within this many degrees of him.",
+                1,
+                45)
+            .getDouble();
+        watcherVanishDistance = c
+            .get(
+                cat,
+                "watcherVanishDistance",
+                watcherVanishDistance,
+                "...or when they come this close, in blocks.",
+                0,
+                64)
+            .getDouble();
+        watcherSeconds = c
+            .get(cat, "watcherSeconds", watcherSeconds, "How long Herobrine stays if he's never looked at.", 5, 600)
+            .getInt();
+        watcherNeedsTrees = c
+            .get(
+                cat,
+                "watcherNeedsTrees",
+                watcherNeedsTrees,
+                "Herobrine only appears beside a tree trunk or under leaves. Off: anywhere in plain view.")
+            .getBoolean();
         if (c.hasChanged()) {
             c.save();
         }

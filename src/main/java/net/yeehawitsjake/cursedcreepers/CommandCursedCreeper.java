@@ -14,8 +14,13 @@ import net.minecraft.world.World;
 import net.yeehawitsjake.cursedcreepers.entity.EntityHallucinationCreeper;
 
 /**
- * /cursedcreeper spawn [distance] [player]: sends a Hallucination Creeper at a player from a distance (50 blocks by
- * default), already after them, from somewhere it can actually get to them. Ops only; only the sender is told.
+ * Ops only; only the sender is told.
+ * <ul>
+ * <li>/cursedcreeper spawn [distance] [player]: sends a Hallucination Creeper at a player from a distance (50 blocks by
+ * default), already after them, from somewhere it can actually get to them.</li>
+ * <li>/cursedcreeper watcher [player]: Herobrine among the trees at the edge of their sight.</li>
+ * <li>/cursedcreeper whisper [player] [sound]: a sound behind them only they hear.</li>
+ * </ul>
  */
 public class CommandCursedCreeper extends CommandBase {
 
@@ -31,12 +36,36 @@ public class CommandCursedCreeper extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/cursedcreeper spawn [distance] [player]";
+        return "/cursedcreeper spawn [distance] [player] | watcher [player] | whisper [player] [sound]";
     }
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
-        if (args.length < 1 || !args[0].equalsIgnoreCase("spawn")) {
+        String sub = args.length < 1 ? "" : args[0].toLowerCase();
+        if (sub.equals("watcher")) {
+            EntityPlayerMP target = args.length > 1 ? getPlayer(sender, args[1]) : getCommandSenderAsPlayer(sender);
+            if (!Haunting.watcher(target)) {
+                throw new CommandException(
+                    "Nowhere in plain view near trees " + Config.watcherMinDistance
+                        + "-"
+                        + Config.watcherMaxDistance
+                        + " blocks from "
+                        + target.getCommandSenderName());
+            }
+            sender.addChatMessage(
+                new ChatComponentText("Something is watching " + target.getCommandSenderName() + " from the trees"));
+            return;
+        }
+        if (sub.equals("whisper")) {
+            EntityPlayerMP target = args.length > 1 ? getPlayer(sender, args[1]) : getCommandSenderAsPlayer(sender);
+            String sound = Haunting.whisper(target, args.length > 2 ? args[2] : null);
+            if (sound == null) {
+                throw new CommandException("No whisper sounds are configured");
+            }
+            sender.addChatMessage(new ChatComponentText(target.getCommandSenderName() + " heard " + sound));
+            return;
+        }
+        if (!sub.equals("spawn")) {
             throw new WrongUsageException(getCommandUsage(sender));
         }
         int distance = args.length > 1 ? parseIntBounded(sender, args[1], 1, 128) : 50;
@@ -47,7 +76,7 @@ public class CommandCursedCreeper extends CommandBase {
             double angle = world.rand.nextDouble() * Math.PI * 2;
             int x = MathHelper.floor_double(target.posX + Math.cos(angle) * distance);
             int z = MathHelper.floor_double(target.posZ + Math.sin(angle) * distance);
-            int y = groundNear(world, x, MathHelper.floor_double(target.posY), z);
+            int y = Haunting.groundNear(world, x, MathHelper.floor_double(target.posY), z, 24);
             if (y < 0) {
                 continue;
             }
@@ -71,33 +100,20 @@ public class CommandCursedCreeper extends CommandBase {
                 + " that it could reach them from");
     }
 
-    /** the standable y closest to the player's height in this column (within 24 blocks), or -1; never loads chunks */
-    private static int groundNear(World world, int x, int y0, int z) {
-        if (!world.blockExists(x, y0, z)) {
-            return -1;
-        }
-        for (int dy = 0; dy <= 24; dy++) {
-            for (int y : new int[] { y0 + dy, y0 - dy }) {
-                if (y > 1 && y < 254
-                    && world.getBlock(x, y - 1, z)
-                        .getMaterial()
-                        .isSolid()
-                    && world.isAirBlock(x, y, z)
-                    && world.isAirBlock(x, y + 1, z)) {
-                    return y;
-                }
-            }
-        }
-        return -1;
-    }
-
     @Override
     @SuppressWarnings("rawtypes")
     public List addTabCompletionOptions(ICommandSender sender, String[] args) {
         if (args.length == 1) {
-            return getListOfStringsMatchingLastWord(args, "spawn");
+            return getListOfStringsMatchingLastWord(args, "spawn", "watcher", "whisper");
         }
-        if (args.length == 3) {
+        if (args.length == 3 && args[0].equalsIgnoreCase("whisper")) {
+            String[] names = new String[Config.whisperSounds.length];
+            for (int i = 0; i < names.length; i++) {
+                names[i] = Config.whisperSounds[i].split(",")[0].trim();
+            }
+            return getListOfStringsMatchingLastWord(args, names);
+        }
+        if (isUsernameIndex(args, args.length - 1)) {
             return getListOfStringsMatchingLastWord(
                 args,
                 MinecraftServer.getServer()
@@ -108,6 +124,6 @@ public class CommandCursedCreeper extends CommandBase {
 
     @Override
     public boolean isUsernameIndex(String[] args, int index) {
-        return index == 2;
+        return index == (args.length > 0 && args[0].equalsIgnoreCase("spawn") ? 2 : 1);
     }
 }

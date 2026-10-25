@@ -1,5 +1,8 @@
 {
   "lockon": { "category": "hostile", "sounds": [ { "name": "cursedcreepers:lockon", "stream": false } ] },
   "lockon_slow": { "category": "hostile", "sounds": [ { "name": "cursedcreepers:lockon_slow", "stream": false } ] },
-  "lockon_fast": { "category": "hostile", "sounds": [ { "name": "cursedcreepers:lockon_fast", "stream": false } ] }
+  "lockon_fast": { "category": "hostile", "sounds": [ { "name": "cursedcreepers:lockon_fast", "stream": false } ] },
+  "whisper": { "category": "hostile", "sounds": [ { "name": "cursedcreepers:whisper", "stream": false } ] },
+  "bold": { "category": "hostile", "sounds": [ { "name": "cursedcreepers:bold", "stream": false } ] },
+  "cave_fart": { "category": "hostile", "sounds": [ { "name": "cursedcreepers:cave_fart", "stream": false } ] }
 }

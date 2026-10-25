@@ -4,7 +4,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderCreeper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.yeehawitsjake.cursedcreepers.client.LockOnSound;
+import net.yeehawitsjake.cursedcreepers.client.RenderWatcher;
 import net.yeehawitsjake.cursedcreepers.entity.EntityHallucinationCreeper;
+import net.yeehawitsjake.cursedcreepers.entity.EntityWatcher;
 
 import cpw.mods.fml.client.registry.RenderingRegistry;
 
@@ -14,6 +16,7 @@ public class ClientProxy extends CommonProxy {
     public void registerRenderers() {
         // looks exactly like a creeper: that's the point
         RenderingRegistry.registerEntityRenderingHandler(EntityHallucinationCreeper.class, new RenderCreeper());
+        RenderingRegistry.registerEntityRenderingHandler(EntityWatcher.class, new RenderWatcher());
     }
 
     @Override
