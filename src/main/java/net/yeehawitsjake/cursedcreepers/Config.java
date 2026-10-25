@@ -22,7 +22,7 @@ public final class Config {
     public static double watcherShare = 40;
     public static String[] whisperSounds = { "cursedcreepers:whisper,20,32", "cursedcreepers:bold,24,40",
         "creeper.primed,2,4", "mob.zombie.wood,10,20", "random.door_open,8,16", "random.bow,12,24",
-        "mob.endermen.stare,16,24", "cursedcreepers:cave_fart,6,14,0.4,cave" };
+        "mob.endermen.stare,16,24", "cursedcreepers:cave_fart,4,10,0.5,cave" };
     public static int watcherMinDistance = 20;
     public static int watcherMaxDistance = 40;
     public static double watcherVanishAngle = 12;
@@ -137,6 +137,15 @@ public final class Config {
                 + "the player, to them alone. volume scales it (1 = just carries that far); cave = only when no daylight "
                 + "reaches them. Any sound name works, including ones a resource pack adds.")
             .getStringList();
+        for (int i = 0; i < whisperSounds.length; i++) {
+            if (whisperSounds[i].equals("cursedcreepers:cave_fart,6,14,0.4,cave")) {
+                // 0.5.0's default: so quiet at that distance it was hardly ever heard
+                whisperSounds[i] = "cursedcreepers:cave_fart,4,10,0.5,cave";
+                c.getCategory(cat)
+                    .get("whisperSounds")
+                    .set(whisperSounds);
+            }
+        }
         watcherMinDistance = c
             .get(cat, "watcherMinDistance", watcherMinDistance, "Closest Herobrine appears, in blocks.", 4, 96)
             .getInt();

@@ -60,19 +60,19 @@ public class Haunting {
         Random r = player.getRNG();
         String[] entry = null;
         if (name == null) {
-            boolean underground = underground(player);
-            List<String[]> fits = new ArrayList<String[]>();
+            List<String[]> anywhere = new ArrayList<String[]>(), cave = new ArrayList<String[]>();
             for (String s : Config.whisperSounds) {
                 String[] e = s.split(",");
-                if (!(e.length > 4 && e[4].trim()
-                    .equalsIgnoreCase("cave")) || underground) {
-                    fits.add(e);
-                }
+                (e.length > 4 && e[4].trim()
+                    .equalsIgnoreCase("cave") ? cave : anywhere).add(e);
             }
-            if (fits.isEmpty()) {
+            // underground, half of them are cave sounds, or they'd be lost among all the others
+            boolean fromCave = !cave.isEmpty() && underground(player) && (anywhere.isEmpty() || r.nextBoolean());
+            List<String[]> pool = fromCave ? cave : anywhere;
+            if (pool.isEmpty()) {
                 return null;
             }
-            entry = fits.get(r.nextInt(fits.size()));
+            entry = pool.get(r.nextInt(pool.size()));
         } else {
             for (String s : Config.whisperSounds) {
                 if (s.split(",")[0].trim()

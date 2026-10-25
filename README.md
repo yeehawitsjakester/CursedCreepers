@@ -24,7 +24,7 @@ Every 10 minutes or so (on average, per player), one player gets something nobod
 - **A whisper**: a sound from somewhere behind them, played to them alone, quiet enough to always sound far off. A
   backwards, echoing version of the lock-on sound, "Bold... and stupid", a creeper hissing right behind them, a zombie
   banging on a door, a door opening, a bow firing, an enderman's stare. Underground (no daylight reaching them at all)
-  there's also a quiet, echoing fart.
+  half of them are a quiet, echoing fart instead.
 - **Herobrine** (2 in 5, when there are trees around): standing beside a trunk or under the leaves 20-40 blocks off, off
   to one side where they'd only catch him out of the corner of their eye, staring at them with glowing white eyes. Only
   they can see him. The moment their crosshair comes near him, or they come within 12 blocks, he's gone: sometimes
