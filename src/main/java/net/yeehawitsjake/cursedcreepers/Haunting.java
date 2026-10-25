@@ -123,13 +123,16 @@ public class Haunting {
     public static boolean watcher(EntityPlayerMP player) {
         World world = player.worldObj;
         Random r = player.getRNG();
-        Vec3 eye = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
-        for (int attempt = 0; attempt < 48; attempt++) {
-            // off to one side, where they'd only catch it out of the corner of their eye
+        // dense woods (jungle) hide anything far off: if nowhere far enough is in view, come closer, to just outside
+        // the distance he vanishes at
+        double closest = Math.min(Config.watcherMinDistance, Config.watcherVanishDistance + 4);
+        for (int attempt = 0; attempt < 96; attempt++) {
+            double min = attempt < 48 ? Config.watcherMinDistance : closest;
+            double max = attempt < 48 ? Config.watcherMaxDistance : Config.watcherMinDistance;
+            // off to one side, where they'd only catch him out of the corner of their eye
             double side = (25 + r.nextDouble() * 20) * (r.nextBoolean() ? 1 : -1);
             double angle = Math.toRadians(player.rotationYaw + side);
-            double dist = Config.watcherMinDistance
-                + r.nextDouble() * Math.max(0, Config.watcherMaxDistance - Config.watcherMinDistance);
+            double dist = min + r.nextDouble() * Math.max(0, max - min);
             int x = MathHelper.floor_double(player.posX - Math.sin(angle) * dist);
             int z = MathHelper.floor_double(player.posZ + Math.cos(angle) * dist);
             int y = groundNear(world, x, MathHelper.floor_double(player.posY), z, 12);
@@ -138,14 +141,27 @@ public class Haunting {
             }
             EntityWatcher watcher = new EntityWatcher(world);
             watcher.setLocationAndAngles(x + 0.5, y, z + 0.5, 0, 0);
-            Vec3 head = Vec3.createVectorHelper(x + 0.5, y + watcher.getEyeHeight(), z + 0.5);
-            // it has to be in plain view (grass and flowers don't count as cover), but not right where they're looking
-            if (world.func_147447_a(eye, head, false, true, false) != null || watcher.isLookedAt(player)) {
-                continue;
+            if (!inView(player, x + 0.5, y, z + 0.5, watcher.getEyeHeight()) || watcher.isLookedAt(player)) {
+                continue; // they'd never see him, or they'd see him head on
             }
             watcher.watch(player, Config.watcherSeconds * 20);
             world.spawnEntityInWorld(watcher);
             return true;
+        }
+        return false;
+    }
+
+    /**
+     * whether any of his head, chest or feet can be seen from their eyes: half hidden behind a trunk is fine. Grass,
+     * flowers and vines don't count as cover.
+     */
+    private static boolean inView(EntityPlayerMP player, double x, double y, double z, float eyeHeight) {
+        for (double h : new double[] { eyeHeight, 1.0, 0.3 }) {
+            // a fresh start vector every time: the raytrace moves it along the ray as it goes
+            Vec3 eye = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+            if (player.worldObj.func_147447_a(eye, Vec3.createVectorHelper(x, y + h, z), false, true, false) == null) {
+                return true;
+            }
         }
         return false;
     }

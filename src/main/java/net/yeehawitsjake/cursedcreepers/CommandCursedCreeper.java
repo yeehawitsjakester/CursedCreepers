@@ -46,7 +46,8 @@ public class CommandCursedCreeper extends CommandBase {
             EntityPlayerMP target = args.length > 1 ? getPlayer(sender, args[1]) : getCommandSenderAsPlayer(sender);
             if (!Haunting.watcher(target)) {
                 throw new CommandException(
-                    "Nowhere in plain view near trees " + Config.watcherMinDistance
+                    "Nowhere in view near trees, off to the side, "
+                        + (int) Math.min(Config.watcherMinDistance, Config.watcherVanishDistance + 4)
                         + "-"
                         + Config.watcherMaxDistance
                         + " blocks from "
