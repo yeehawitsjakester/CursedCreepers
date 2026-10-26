@@ -114,7 +114,17 @@ public class EntityHallucinationCreeper extends EntityCreeper {
      * roof counted as reachable from the foot of the wall; this wants the path to end within reach in all three.
      */
     public PathEntity pathTo(EntityLivingBase target) {
-        PathEntity path = getNavigator().getPathToEntityLiving(target);
+        // straight to the pathfinder: the navigator won't plan for a mob that isn't on the ground, which one about to
+        // be
+        // spawned (or mid-glide) isn't. Same settings as its navigator: through open doors, swimming
+        PathEntity path = worldObj.getPathEntityToEntity(
+            this,
+            target,
+            (float) Config.hallucinationSightRange,
+            true,
+            false,
+            getNavigator().getAvoidsWater(),
+            true);
         if (path == null) {
             return null;
         }
