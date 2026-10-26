@@ -6,7 +6,7 @@ Shitpost creepers for Minecraft **1.7.10** (Forge 10.13.4.1614). Install on the 
 
 - **Hallucination Creeper**: looks exactly like a creeper. 1% of naturally spawned creepers are secretly one. It
   notices you from 64 blocks away, but only if it can see you and has a way to actually get to you, and runs at you at
-  24 blocks a second (about 4x a sprinting player). If you get somewhere it can't follow, it gives up after 3 seconds
+  96 blocks a second (about 17x a sprinting player). If you get somewhere it can't follow, it gives up after 3 seconds
   and leaves you alone for 10.
   - As it comes, a sound plays from where it is, stretched to end the instant it reaches you: slowed down and deeper for
     a long chase, sped up and higher for a short one. You hear it across its whole sight range; anyone else within 60

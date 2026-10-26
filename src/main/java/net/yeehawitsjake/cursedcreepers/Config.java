@@ -9,7 +9,7 @@ public final class Config {
 
     private Config() {}
 
-    public static double hallucinationChaseSpeed = 24;
+    public static double hallucinationChaseSpeed = 96;
     public static double hallucinationSightRange = 64;
     public static double hallucinationVanishDistance = 1.5;
     public static int hallucinationSpawnWeight = 0;
@@ -40,8 +40,15 @@ public final class Config {
                 hallucinationChaseSpeed,
                 "Blocks per second it runs at you, exactly (a sprinting player does about 5.6, a creeper 2.8).",
                 1,
-                100)
+                400)
             .getDouble();
+        if (hallucinationChaseSpeed == 24) {
+            // up to 0.5.3's default: still too slow to be frightening
+            hallucinationChaseSpeed = 96;
+            c.getCategory(cat)
+                .get("chaseSpeed")
+                .set(hallucinationChaseSpeed);
+        }
         hallucinationSightRange = c
             .get(
                 cat,

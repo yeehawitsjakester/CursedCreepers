@@ -15,7 +15,7 @@ import net.yeehawitsjake.cursedcreepers.Config;
  */
 public class EntityAIHallucinationChase extends EntityAIBase {
 
-    private static final int REPLAN_TICKS = 5;
+    private static final int REPLAN_TICKS = 2; // at ~5 blocks a tick, a stale path soon misses them
     private static final int GIVE_UP_TICKS = 60;
 
     private final EntityHallucinationCreeper creeper;
