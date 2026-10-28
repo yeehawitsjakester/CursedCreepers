@@ -8,9 +8,9 @@ Shitpost creepers for Minecraft **1.7.10** (Forge 10.13.4.1614). Install on the 
   notices you from 64 blocks away, but only if it can see you and has a way to actually get to you, and runs at you at
   96 blocks a second (about 17x a sprinting player). If you get somewhere it can't follow, it gives up after 3 seconds
   and leaves you alone for 10.
-  - As it comes, a sound plays from where it is, stretched to end the instant it reaches you: slowed down and deeper for
-    a long chase, sped up and higher for a short one. You hear it across its whole sight range; anyone else within 60
-    blocks hears it too, fading with their distance from it, like proximity chat.
+  - As it comes, the first part of the meme clip plays from where it is (over again if the chase is a long one), and
+    when it reaches you the second part goes off as its "explosion". You hear it across its whole sight range; anyone
+    else within 60 blocks hears it too, fading with their distance from it, like proximity chat.
   - Only you can see it. It can't be hit, shot or pushed, makes no footsteps, and fades away after two minutes with
     nobody to chase.
   - When it reaches you it's gone. Usually that's all; one in five goes off instead: a bang and 1.5 hearts of damage,
@@ -58,8 +58,8 @@ player's height as it can find, somewhere it can actually reach them from.
 ## Sounds and skin
 
 `sound-src/` holds the original clips; `tools/make-sounds.sh` (needs ffmpeg) turns them into the OGGs the mod plays: the
-lock-on sound at 1x, 0.25x and 4x speed and the backwards whisper, all from the meme clip, plus `bold` and `cave_fart`
-as they are. `tools/make-skin.py` draws Herobrine's skin and his eyes layer.
+creeper's approach and arrival (the meme clip's two parts, at their own speed) and the backwards whisper (the whole clip),
+plus `bold` and `cave_fart` as they are. `tools/make-skin.py` draws Herobrine's skin and his eyes layer.
 
 ## Building
 

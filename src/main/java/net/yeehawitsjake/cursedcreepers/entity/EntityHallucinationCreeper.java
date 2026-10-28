@@ -242,18 +242,21 @@ public class EntityHallucinationCreeper extends EntityCreeper {
         return false;
     }
 
-    /** it got to them: gone, maybe with a bang, and once in a hundred million times it takes the server with it */
+    /**
+     * it got to them: gone, with the second part of the meme clip as its "explosion" (heard as far as its approach),
+     * maybe a real bang's worth of damage, and once in a hundred million times it takes the server with it
+     */
     private void arrive(Entity target) {
         setDead();
+        worldObj.playSoundEffect(
+            posX,
+            posY,
+            posZ,
+            "cursedcreepers:arrive",
+            (float) Math.max(1, Math.max(Config.hallucinationSoundRange, Config.hallucinationSightRange) / 16),
+            1.0F);
         if (explodes) {
             // a real explosion would knock out paintings and item frames even without breaking blocks: fake one
-            worldObj.playSoundEffect(
-                posX,
-                posY,
-                posZ,
-                "random.explode",
-                4.0F,
-                (1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.2F) * 0.7F);
             ((WorldServer) worldObj).func_147487_a("hugeexplosion", posX, posY + 1, posZ, 1, 0, 0, 0, 0);
             target.attackEntityFrom(
                 new EntityDamageSource("explosion.player", this).setDifficultyScaled()
